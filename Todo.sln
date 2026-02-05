@@ -4,6 +4,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B863D00B-BC9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Todo.Api", "Todo.Api\Todo.Api.csproj", "{82BD3B2D-6EC3-4673-801E-BDF58EDC3072}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Todo.Web", "Todo.Web\Todo.Web.csproj", "{E91E21CC-FD49-46CA-844F-68E02BE1E764}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -11,11 +13,16 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{82BD3B2D-6EC3-4673-801E-BDF58EDC3072} = {B863D00B-BC9C-41D9-9FB3-B4CBF99FE42E}
+		{E91E21CC-FD49-46CA-844F-68E02BE1E764} = {B863D00B-BC9C-41D9-9FB3-B4CBF99FE42E}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{82BD3B2D-6EC3-4673-801E-BDF58EDC3072}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{82BD3B2D-6EC3-4673-801E-BDF58EDC3072}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82BD3B2D-6EC3-4673-801E-BDF58EDC3072}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82BD3B2D-6EC3-4673-801E-BDF58EDC3072}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E91E21CC-FD49-46CA-844F-68E02BE1E764}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E91E21CC-FD49-46CA-844F-68E02BE1E764}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E91E21CC-FD49-46CA-844F-68E02BE1E764}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E91E21CC-FD49-46CA-844F-68E02BE1E764}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
