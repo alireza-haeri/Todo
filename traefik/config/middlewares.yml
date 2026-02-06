@@ -1,0 +1,28 @@
+http:
+  middlewares:
+    
+    retry-default:
+      retry:
+        attempts: 2
+        initialInterval: 100ms
+    
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+        
+    api-rate-limit:
+      rateLimit:
+        average: 30
+        burst: 10
+        sourceCriterion:
+          ipStrategy:
+            depth: 1     
+            
+    web-rate-limit:
+      rateLimit:
+        average: 50
+        burst: 30
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
