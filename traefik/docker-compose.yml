@@ -3,82 +3,63 @@ services:
     image: traefik:v2.11
     container_name: traefik
     restart: unless-stopped
-  
     command:
-      #logging
+      # logging
       - "--log.level=INFO"
-      
-      #EntryPoints
+      # EntryPoints
       - "--entrypoints.web.address=:80"
-        
-      #Docker Provider
+      - "--entrypoints.websecure.address=:443"
+      # Providers
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=traefik_proxy"
-        
-      #Dashboard
+      - "--providers.file.directory=/etc/traefik/config"
+      - "--providers.file.watch=true"
       - "--api.dashboard=true"
-        
     ports:
-      - "9090:80"
-        
+      - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-        
+      - ./config:/etc/traefik/config
     networks:
       - traefik_proxy
-        
-        
   todo-api:
     build:
       context: ..
       dockerfile: Todo.Api/Dockerfile
-      #container_name: todo-api
     restart: unless-stopped
-    
     environment:
       - "ASPNETCORE_URLS=http://+:9091"
-    
     labels:
       - "traefik.enable=true"
-      
       - "traefik.http.routers.todo-api.rule=Host(`todo.api.localhost`)"
       - "traefik.http.routers.todo-api.entrypoints=web"
-      
-      - "traefik.http.routers.todo-api.middlewares=api-retry"
-      
+      - "traefik.http.routers.todo-api.middlewares=api-rate-limit@file,retry-default@file"
       - "traefik.http.services.todo-api.loadbalancer.server.port=9091"
-        
       - "traefik.http.services.todo-api.loadbalancer.healthcheck.path=/api/health"
       - "traefik.http.services.todo-api.loadbalancer.healthcheck.interval=5s"
       - "traefik.http.services.todo-api.loadbalancer.healthcheck.timeout=2s"
-    
-      - "traefik.http.middlewares.api-retry.retry.attempts=3"
-      - "traefik.http.middlewares.api-retry.retry.initialinterval=100ms"
-        
-        
+      - "traefik.http.services.todo-api.loadbalancer.serversTransport=api-transport@file"
     networks:
       - traefik_proxy
-              
   todo-web:
     build:
       context: ..
       dockerfile: Todo.Web/Dockerfile
     container_name: todo-web
     restart: unless-stopped
-    
     environment:
       - "ASPNETCORE_URLS=http://+:9092"
-    
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.todo-web.rule=Host(`todo.web.localhost`)"
       - "traefik.http.routers.todo-web.entrypoints=web"
+      - "traefik.http.routers.todo-web.middlewares=web-rate-limit@file"
       - "traefik.http.services.todo-web.loadbalancer.server.port=9092"
-        
+      - "traefik.http.services.todo-web.loadbalancer.serversTransport=web-transport@file"
     networks:
       - traefik_proxy
-        
 networks:
   traefik_proxy:
     external: true
