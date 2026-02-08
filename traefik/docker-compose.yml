@@ -5,10 +5,10 @@ services:
     restart: unless-stopped
     command:
       # logging
-      - "--log.level=INFO"
+      - "--log.level=Warn"
       # EntryPoints
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
+      # - "--entrypoints.websecure.address=:443"
       # Providers
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -16,12 +16,18 @@ services:
       - "--providers.file.directory=/etc/traefik/config"
       - "--providers.file.watch=true"
       - "--api.dashboard=true"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.format=json"
+      - "--accesslog.fields.names.StartUTC=drop"
+      - "--accesslog.fields.headers.defaultmode=keep"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config:/etc/traefik/config
+      - ./logs:/var/log/traefik
     networks:
       - traefik_proxy
   sqlserver:
