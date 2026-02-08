@@ -24,15 +24,31 @@ services:
       - ./config:/etc/traefik/config
     networks:
       - traefik_proxy
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    restart: unless-stopped
+    environment:
+      - "ACCEPT_EULA=Y"
+      - "MSSQL_PID=Developer"
+      - "MSSQL_SA_PASSWORD=YourStrong!Passw0rd"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks:
+      - traefik_proxy
   todo-api:
     build:
       context: ..
       dockerfile: Todo.Api/Dockerfile
     restart: unless-stopped
-    deploy:
-      replicas: 3
+    user: root
     environment:
       - "ASPNETCORE_URLS=http://+:9091"
+      - "ConnectionStrings__Default=Server=sqlserver;Database=TodoApiDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
+    volumes:
+      - dp-keys:/home/app/.aspnet/DataProtection-Keys
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.todo-api.rule=Host(`todo.api.localhost`)"
@@ -43,6 +59,22 @@ services:
       - "traefik.http.services.todo-api.loadbalancer.healthcheck.interval=5s"
       - "traefik.http.services.todo-api.loadbalancer.healthcheck.timeout=2s"
       - "traefik.http.services.todo-api.loadbalancer.serversTransport=api-transport@file"
+    depends_on:
+      - sqlserver
+    networks:
+      - traefik_proxy
+
+  migrator:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    container_name: migrator
+    working_dir: /src
+    volumes:
+      - ..:/src:cached
+    environment:
+      - "ConnectionStrings__Default=Server=sqlserver;Database=TodoApiDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
+    depends_on:
+      - sqlserver
+    entrypoint: /bin/bash -c 'set -x; dotnet tool install --tool-path /tmp/dotnet-tools dotnet-ef --version 10.0.1 || true; dotnet restore Todo.Profile --verbosity minimal && dotnet restore Todo.Api --verbosity minimal; CONN_PROFILE="Server=sqlserver;Database=TodoProfileDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"; CONN_API="Server=sqlserver;Database=TodoApiDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"; for i in $$(seq 1 12); do /tmp/dotnet-tools/dotnet-ef database update --project Todo.Profile --startup-project Todo.Profile --connection "$$CONN_PROFILE" --verbose && break || (echo "Retrying Todo.Profile migration (attempt $$i)"; sleep 5); done; for i in $$(seq 1 12); do /tmp/dotnet-tools/dotnet-ef database update --project Todo.Api --startup-project Todo.Api --connection "$$CONN_API" --verbose && break || (echo "Retrying Todo.Api migration (attempt $$i)"; sleep 5); done'
     networks:
       - traefik_proxy
   todo-web:
@@ -51,8 +83,11 @@ services:
       dockerfile: Todo.Web/Dockerfile
     container_name: todo-web
     restart: unless-stopped
+    user: root
     environment:
       - "ASPNETCORE_URLS=http://+:9092"
+    volumes:
+      - dp-keys:/home/app/.aspnet/DataProtection-Keys
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.todo-web.rule=Host(`todo.web.localhost`)"
@@ -62,6 +97,32 @@ services:
       - "traefik.http.services.todo-web.loadbalancer.serversTransport=web-transport@file"
     networks:
       - traefik_proxy
+  todo-profile:
+    build:
+      context: ..
+      dockerfile: Todo.Profile/Dockerfile
+    container_name: todo-profile
+    restart: unless-stopped
+    user: root
+    environment:
+      - "ASPNETCORE_URLS=http://+:9093"
+      - "ConnectionStrings__Default=Server=sqlserver;Database=TodoProfileDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
+    volumes:
+      - dp-keys:/home/app/.aspnet/DataProtection-Keys
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.todo-profile.rule=Host(`todo.profile.localhost`)"
+      - "traefik.http.routers.todo-profile.entrypoints=web"
+      - "traefik.http.services.todo-profile.loadbalancer.server.port=9093"
+      - "traefik.http.services.todo-profile.loadbalancer.serversTransport=web-transport@file"
+    depends_on:
+      - sqlserver
+    networks:
+      - traefik_proxy
 networks:
   traefik_proxy:
     external: true
+    
+volumes:
+  mssql-data:
+  dp-keys:
