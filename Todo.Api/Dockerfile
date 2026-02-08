@@ -16,7 +16,16 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./Todo.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
+RUN mkdir -p /home/app/.aspnet/DataProtection-Keys && \
+    chown -R app:app /home/app/.aspnet/DataProtection-Keys
+
+USER app
+
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Todo.Api.dll"]
+COPY ["Todo.Api/docker-entrypoint.sh", "/docker-entrypoint.sh"]
+USER root
+RUN chmod +x /docker-entrypoint.sh
+USER app
+ENTRYPOINT ["/docker-entrypoint.sh"]

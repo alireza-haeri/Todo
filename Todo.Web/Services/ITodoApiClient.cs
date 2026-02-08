@@ -1,6 +1,6 @@
 namespace Todo.Web.Services;
 
-public interface ITodoApiClient
+public interface ITodoApiClient : IApiClient
 {
     
 }

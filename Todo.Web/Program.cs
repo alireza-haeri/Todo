@@ -1,13 +1,32 @@
+using Microsoft.AspNetCore.DataProtection;
+using System.IO;
+using Todo.Web.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 
-// Register a reusable API client with base address from configuration
-builder.Services.AddHttpClient<Todo.Web.Services.IApiClient, Todo.Web.Services.ApiClient>(client =>
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/home/app/.aspnet/DataProtection-Keys"))
+    .SetApplicationName("Todo.Web")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
+
+// Register HttpContextAccessor so Api client can read auth cookie per-request
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IApiClient, ApiClient>();
+builder.Services.AddHttpClient<ITodoApiClient,ApiClient>( client =>
 {
-    var apiAddress = builder.Configuration["Api:BaseUrl"]
-                     ?? throw new ArgumentNullException($"Api:BaseUrl");
-    var defaultHost = builder.Configuration["Api:DefaultHost"];
+    var apiAddress = builder.Configuration["Api:Api:BaseUrl"]
+                     ?? throw new ArgumentNullException($"Api:Api:BaseUrl");
+    var defaultHost = builder.Configuration["Api:Api:DefaultHost"];
+    client.BaseAddress = new Uri(apiAddress);
+    client.DefaultRequestHeaders.Host = defaultHost;
+});
+builder.Services.AddHttpClient<IUserApiClient,ApiClient>( client =>
+{
+    var apiAddress = builder.Configuration["Api:Profile:BaseUrl"]
+                     ?? throw new ArgumentNullException($"Api:Profile:BaseUrl");
+    var defaultHost = builder.Configuration["Api:Profile:DefaultHost"];
     client.BaseAddress = new Uri(apiAddress);
     client.DefaultRequestHeaders.Host = defaultHost;
 });

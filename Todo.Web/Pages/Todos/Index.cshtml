@@ -1,0 +1,18 @@
+@page "/todos"
+@model Todo.Web.pages.Todos.IndexModel
+
+<h1>Todos</h1>
+
+<form method="post">
+    <input asp-for="NewTitle" placeholder="New todo" />
+    <button type="submit">Add</button>
+</form>
+
+<ul>
+@foreach (var t in Model.Items)
+{
+    <li>@t.Title - @(t.IsCompleted ? "Done" : "Pending")</li>
+}
+</ul>
+
+<a asp-page="/Index">Back</a>

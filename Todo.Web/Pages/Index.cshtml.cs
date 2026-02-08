@@ -4,14 +4,14 @@ using Todo.Web.Services;
 
 namespace Todo.Web.pages;
 
-public class Index(IApiClient apiClient) : PageModel
+public class Index(ITodoApiClient todoClient,IUserApiClient userClient) : PageModel
 {
-
-    public string Kazem { get; set; }
+    public string TodoHealth { get; set; }
+    public string UserHealth { get; set; }
 
     public async Task OnGetAsync()
     {
-        var res = await apiClient.GetStringAsync("/api/health");
-        Kazem = res;
+        TodoHealth = await todoClient.GetStringAsync("/api/health");
+        UserHealth = await userClient.GetStringAsync("/api/health");
     }
 }

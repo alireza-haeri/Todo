@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Todo.Web.Services;
 
-public class ApiClient(HttpClient http, IHttpContextAccessor ctx) : IApiClient
+public class ApiClient(HttpClient http, IHttpContextAccessor ctx) : IUserApiClient, ITodoApiClient
 {
     private void AddAuthHeaderIfPresent(HttpRequestMessage req)
     {
