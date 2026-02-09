@@ -49,3 +49,25 @@ http:
       replacepathregex:
         regex: ^/api/auth/health$$
         replacement: /api/health
+
+
+    #security
+    web-security:
+      headers:
+        frameDeny: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        customResponseHeaders:
+          X-Served-By: "Traefik-Gateway"
+
+    api-security:
+      headers:
+        contentTypeNosniff: true
+        customResponseHeaders:
+          X-Served-By: "Traefik-Gateway"
+          X-Content-Type: "application/json"
+
+    forward-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "http"
