@@ -11,7 +11,7 @@ public class Index(ITodoApiClient todoClient,IUserApiClient userClient) : PageMo
 
     public async Task OnGetAsync()
     {
-        TodoHealth = await todoClient.GetStringAsync("/api/health");
-        UserHealth = await userClient.GetStringAsync("/api/health");
+        TodoHealth = await todoClient.GetStringAsync("/api/todos/health");
+        UserHealth = await userClient.GetStringAsync("/api/auth/health");
     }
 }

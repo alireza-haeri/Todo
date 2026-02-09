@@ -10,3 +10,8 @@ http:
       forwardingTimeouts:
         dialTimeout: 10s
         responseHeaderTimeout: 10s
+
+    profile-transport:
+      forwardingTimeouts:
+        dialTimeout: 5s
+        responseHeaderTimeout: 5s
