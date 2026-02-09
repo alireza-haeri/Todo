@@ -107,7 +107,7 @@ services:
       - "traefik.http.routers.todo-web.rule=Host(`todo.localhost`)"
       - "traefik.http.routers.todo-web.entrypoints=web"
       - "traefik.http.routers.todo-web.priority=10"
-      - "traefik.http.routers.todo-web.middlewares=web-security@file,forward-headers@file,web-rate-limit@file"
+      - "traefik.http.routers.todo-web.middlewares=web-security@file,forward-headers@file,common-compress@file,web-rate-limit@file"
       - "traefik.http.services.todo-web.loadbalancer.server.port=9092"
       - "traefik.http.services.todo-web.loadbalancer.serversTransport=web-transport@file"
     networks:

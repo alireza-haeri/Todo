@@ -71,3 +71,7 @@ http:
       headers:
         customRequestHeaders:
           X-Forwarded-Proto: "http"
+
+    #compress
+    common-compress:
+      compress: {}
