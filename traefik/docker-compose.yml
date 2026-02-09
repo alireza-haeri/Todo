@@ -21,9 +21,13 @@ services:
       - "--accesslog.format=json"
       - "--accesslog.fields.names.StartUTC=drop"
       - "--accesslog.fields.headers.defaultmode=keep"
+      - "--ping=true"
+      - "--entrypoints.status.address=:8082"
+      - "--ping.entrypoint=status"
     ports:
       - "80:80"
       - "443:443"
+      - "8082:8082"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config:/etc/traefik/config
