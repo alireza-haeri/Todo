@@ -72,6 +72,11 @@ http:
         customRequestHeaders:
           X-Forwarded-Proto: "http"
 
+    auth-dashboard:
+      basicAuth:
+        users:
+          - "admin:$apr1$yBZc0kJs$9mxzn.l/q30DvsbA32rg5."
+
     #compress
     common-compress:
       compress: {}
