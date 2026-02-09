@@ -4,3 +4,4 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 traefik/logs/access.log
+traefik/logs/access.log

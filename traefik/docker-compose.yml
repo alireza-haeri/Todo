@@ -24,6 +24,17 @@ services:
       - "--ping=true"
       - "--entrypoints.status.address=:8082"
       - "--ping.entrypoint=status"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entryPoint=status"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addRoutersLabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
+      
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.routers.dashboard.service=api@internal"
     ports:
       - "80:80"
       - "443:443"
