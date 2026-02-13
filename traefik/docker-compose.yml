@@ -83,7 +83,7 @@ services:
       
       - "traefik.http.services.todo-api.loadbalancer.healthcheck.path=/api/health"
       - "traefik.http.services.todo-api.loadbalancer.healthcheck.interval=5s"
-      - "traefik.http.services.todo-api.loadbalancer.healthcheck.timeout=2s"
+      - "traefik.http.services.todo-api.loadbalancer.healthcheck.timeout=3s"
       - "traefik.http.services.todo-api.loadbalancer.serversTransport=api-transport@file"
     depends_on:
       - sqlserver
