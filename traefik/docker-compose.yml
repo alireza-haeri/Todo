@@ -74,7 +74,7 @@ services:
     labels:
       - "traefik.enable=true"
       
-      - "traefik.http.routers.todo-api.rule=Host(`todo.localhost`) && PathPrefix(`/api/todos`)"
+      - "traefik.http.routers.todo-api.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api/todos`)"
       - "traefik.http.routers.todo-api.entrypoints=web"
       - "traefik.http.routers.todo-api.middlewares=api-security@file,forward-headers@file,todo-health-rewrite@file,api-rate-limit@file,retry-default@file"
       - "traefik.http.routers.todo-api.priority=100"
@@ -116,7 +116,7 @@ services:
       - dp-keys:/home/app/.aspnet/DataProtection-Keys
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.todo-web.rule=Host(`todo.localhost`)"
+      - "traefik.http.routers.todo-web.rule=Host(`${APP_DOMAIN}`)"
       - "traefik.http.routers.todo-web.entrypoints=web"
       - "traefik.http.routers.todo-web.priority=10"
       - "traefik.http.routers.todo-web.middlewares=web-security@file,forward-headers@file,common-compress@file,web-rate-limit@file"
@@ -138,7 +138,7 @@ services:
       - dp-keys:/home/app/.aspnet/DataProtection-Keys
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.todo-profile.rule=Host(`todo.localhost`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.todo-profile.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api/auth`)"
       - "traefik.http.routers.todo-profile.entrypoints=web"
       - "traefik.http.routers.todo-profile.priority=100"
       - "traefik.http.routers.todo-profile.middlewares=api-security@file,forward-headers@file,profile-health-rewrite@file,profile-rate-limit@file,retry-default@file"
