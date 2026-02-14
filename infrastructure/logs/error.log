@@ -6,3 +6,12 @@
 2026/02/13 08:17:25 [emerg] 1#1: unexpected "}" in /etc/nginx/conf.d/default.conf:23
 2026/02/13 08:17:28 [emerg] 1#1: unexpected "}" in /etc/nginx/conf.d/default.conf:23
 2026/02/13 08:17:35 [emerg] 1#1: unexpected "}" in /etc/nginx/conf.d/default.conf:23
+2026/02/13 12:49:40 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:49:40 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:49:40 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:49:41 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:49:42 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:49:44 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:49:47 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:49:53 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19
+2026/02/13 12:50:06 [emerg] 1#1: directive "error_page" is not terminated by ";" in /etc/nginx/conf.d/todo.conf:19

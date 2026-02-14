@@ -1,6 +1,8 @@
 services:
 
   nginx:
+    profiles:
+      - disabled
     image: nginx:alpine
     container_name: nginx
     restart: unless-stopped
@@ -10,6 +12,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./logs:/var/log/nginx
+      - ./nginx/errors:/usr/share/nginx/html/errors:ro
     depends_on:
       - todo-web
     networks:
@@ -17,8 +20,6 @@ services:
 
 
   traefik:
-    profiles:
-      - disabled
     image: traefik:v2.11
     container_name: traefik
     restart: unless-stopped
@@ -88,7 +89,7 @@ services:
       dockerfile: Todo.Api/Dockerfile
     restart: unless-stopped
     user: root
-    container_name: todo-api
+    #container_name: todo-api
     environment:
       - "ASPNETCORE_URLS=http://+:9091"
       - "ConnectionStrings__Default=Server=sqlserver;Database=TodoApiDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True"
