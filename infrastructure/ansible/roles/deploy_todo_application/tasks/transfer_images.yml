@@ -1,0 +1,37 @@
+- name: Process Docker Images
+  block:
+    - name: Check if image exists on target
+      command: "docker image inspect {{ item.name }}:{{ item.tag }}"
+      register: image_check
+      ignore_errors: yes
+      changed_when: false
+      loop: "{{ docker_images }}"
+      loop_control:
+        label: "{{ item.name }}:{{ item.tag }}"
+
+    - name: Transfer image file to server
+      copy:
+        src: "./images/{{ item.item.name }}.tar"
+        dest: "/tmp/{{ item.item.name }}.tar"
+      when: item.rc != 0
+      loop: "{{ image_check.results }}"
+      loop_control:
+        label: "Transferring {{ item.item.name }}"
+
+    - name: Load image in docker
+      command: "docker load -i /tmp/{{ item.item.name }}.tar"
+      when: item.rc != 0
+      register: load_result
+      changed_when: "'Loaded image' in load_result.stdout"
+      loop: "{{ image_check.results }}"
+      loop_control:
+        label: "Loading {{ item.item.name }}"
+
+    - name: Remove tmp file
+      file:
+        path: "/tmp/{{ item.item.name }}.tar"
+        state: absent
+      when: item.rc != 0
+      loop: "{{ image_check.results }}"
+      loop_control:
+        label: "Cleaning up {{ item.item.name }}"

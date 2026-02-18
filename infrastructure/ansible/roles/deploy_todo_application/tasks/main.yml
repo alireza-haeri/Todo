@@ -1,0 +1,8 @@
+- name: Install Docker (if required)
+  include_tasks: install_docker_fedora.yml
+
+- name: Transfer and load Docker images
+  include_tasks: transfer_images.yml
+
+- name: Deploy Docker container
+  include_tasks: deploy_compose.yml

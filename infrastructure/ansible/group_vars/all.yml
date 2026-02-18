@@ -1,0 +1,20 @@
+# traefik
+traefi_ports:
+  - "80:80"
+  - "443:443"
+  - "8082:8082"
+
+#docker
+docker_images:
+  - { name: "traefik-todo-api", tag: "latest", file: "todo-api.tar" }
+  - { name: "traefik-todo-web", tag: "latest", file: "todo-web.tar" }
+  - { name: "traefik-todo-profile", tag: "latest", file: "todo-profile.tar" }
+  #- { name: "todo-migrator", tag: "latest", file: "todo-migrator.tar" }
+  
+compose_file: docker-compose.yml.j2
+compose_env_file: .env.j2
+project_name: todo
+    
+project_directory: /opt/todo
+
+app_domain: arhm13.ir

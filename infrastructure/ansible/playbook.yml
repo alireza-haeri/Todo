@@ -1,0 +1,7 @@
+- name: Deploying Todo application
+  hosts: server
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - deploy_todo_application

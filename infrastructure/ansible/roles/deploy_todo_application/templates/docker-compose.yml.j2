@@ -1,0 +1,148 @@
+version: "3.9"
+
+services:
+  
+  #  sqlserver:
+  #    image: mcr.microsoft.com/mssql/server:2022-latest
+  #    container_name: sqlserver
+  #    restart: unless-stopped
+  #    logging:
+  #      driver: "none"
+  #    environment:
+  #      - ACCEPT_EULA=Y
+  #      - MSSQL_PID=Developer
+  #      - MSSQL_SA_PASSWORD=YourStrong!Passw0rd
+  #      - MSSQL_LOG_LEVEL=WARN
+  #    ports:
+  #      - "1433:1433"
+  #    volumes:
+  #      - mssql-data:/var/opt/mssql
+  #    networks:
+  #      - traefik_proxy
+  
+  #  migrator:
+  #    image: todo-migrator:latest
+  #    container_name: migrator
+  #    restart: "no"
+  #    depends_on:
+  #      - sqlserver
+  #    entrypoint: /bin/bash -c "
+  #      ./wait-for-it.sh sqlserver:1433 --timeout=60 --strict --
+  #      dotnet ef database update --project /app/Todo.Profile/Todo.Profile.csproj --startup-project /app/Todo.Profile/Todo.Profile.csproj &&
+  #      dotnet ef database update --project /app/Todo.Api/Todo.Api.csproj --startup-project /app/Todo.Api/Todo.Api.csproj
+  #    "
+  #    networks:
+  #      - traefik_proxy
+
+  todo-api:
+    image: {{ docker_images[ 0 ].name }}
+    restart: unless-stopped
+    user: root
+    environment:
+      - ASPNETCORE_URLS=http://+:9091
+      - ConnectionStrings__Default=Server=sqlserver;Database=TodoApiDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True
+    volumes:
+      - dp-keys:/home/app/.aspnet/DataProtection-Keys
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.todo-api.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api/todos`)"
+      - "traefik.http.routers.todo-api.entrypoints=web"
+      - "traefik.http.routers.todo-api.middlewares=api-security@file,internal-only@file,forward-headers@file,todo-health-rewrite@file,api-rate-limit@file,retry-default@file"
+      - "traefik.http.services.todo-api.loadbalancer.server.port=9091"
+      - "traefik.http.services.todo-api.loadbalancer.healthcheck.path=/api/health"
+      - "traefik.http.services.todo-api.loadbalancer.healthcheck.interval=5s"
+      - "traefik.http.services.todo-api.loadbalancer.healthcheck.timeout=3s"
+      - "traefik.http.services.todo-api.loadbalancer.serversTransport=api-transport@file"
+    networks:
+      - traefik_proxy
+
+  todo-web:
+    image: {{ docker_images[ 1 ].name }}
+    restart: unless-stopped
+    user: root
+    environment:
+      - ASPNETCORE_URLS=http://+:9092
+    volumes:
+      - dp-keys:/home/app/.aspnet/DataProtection-Keys
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.todo-web.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.todo-web.entrypoints=websecure"
+      - "traefik.http.routers.todo-web.tls.certresolver=le"
+      - "traefik.http.routers.todo-web.middlewares=web-security@file,forward-headers@file,common-compress@file,web-rate-limit@file"
+
+      - "traefik.http.routers.todo-web-redirect.entrypoints=web"
+      - "traefik.http.routers.todo-web-redirect.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.todo-web-redirect.middlewares=redirect-to-https@file"
+      
+      - "traefik.http.services.todo-web.loadbalancer.server.port=9092"
+      - "traefik.http.services.todo-web.loadbalancer.serversTransport=web-transport@file"
+    #    depends_on:
+    #      - migrator
+    networks:
+      - traefik_proxy
+
+  todo-profile:
+    image: {{ docker_images[ 2 ].name }}
+    restart: unless-stopped
+    user: root
+    environment:
+      - ASPNETCORE_URLS=http://+:9093
+      - ConnectionStrings__Default=Server=sqlserver;Database=TodoProfileDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True
+    volumes:
+      - dp-keys:/home/app/.aspnet/DataProtection-Keys
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.todo-profile.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.todo-profile.entrypoints=web"
+      - "traefik.http.routers.todo-profile.middlewares=api-security@file,internal-only@file,forward-headers@file,profile-health-rewrite@file,profile-rate-limit@file,retry-default@file"
+      - "traefik.http.services.todo-profile.loadbalancer.server.port=9093"
+      - "traefik.http.services.todo-profile.loadbalancer.serversTransport=profile-transport@file"
+      #    depends_on:
+      #      - migrator
+      #      - sqlserver
+    networks:
+      - traefik_proxy
+
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--log.level=Info"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.email=alireza.haeri.dev@gmail.com"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik_proxy"
+      - "--providers.file.directory=/etc/traefik/config"
+      - "--providers.file.watch=true"
+      - "--api.dashboard=true"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--entrypoints.status.address=:8082"
+      - "--ping=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8082:8082"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config:/etc/traefik/config
+      - ./logs:/var/log/traefik
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - traefik_proxy
+
+networks:
+  traefik_proxy:
+    external: true
+
+volumes:
+  mssql-data:
+  dp-keys:

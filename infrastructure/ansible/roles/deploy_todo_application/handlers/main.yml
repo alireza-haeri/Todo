@@ -1,0 +1,12 @@
+- name: restart application
+  community.docker.docker_compose_v2:
+    project_src: "{{ project_directory }}"
+    project_name: "{{ project_name }}"
+    state: restarted
+  become: yes
+  
+- name: restart docker socket
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes

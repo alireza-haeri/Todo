@@ -1,0 +1,88 @@
+http:
+  middlewares:
+    #retry
+    retry-default:
+      retry:
+        attempts: 2
+        initialInterval: 100ms
+    
+    #redirect https
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+      
+    #rate limit
+    api-rate-limit:
+      rateLimit:
+        average: 30
+        burst: 10
+        sourceCriterion:
+          ipStrategy:
+            depth: 1     
+            
+    web-rate-limit:
+      rateLimit:
+        average: 50
+        burst: 30
+        sourceCriterion:
+          ipStrategy:
+            depth: 1       
+
+
+    profile-rate-limit:
+      rateLimit:
+        average: 30
+        burst: 10
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    #rewrite path
+    todo-health-rewrite:
+      replacepathregex:
+        regex: ^/api/todos/health$$
+        replacement: /api/health
+
+
+    profile-health-rewrite:
+      replacepathregex:
+        regex: ^/api/auth/health$$
+        replacement: /api/health
+
+
+    #security
+    web-security:
+      headers:
+        frameDeny: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        customResponseHeaders:
+          X-Served-By: "Traefik-Gateway"
+
+    api-security:
+      headers:
+        contentTypeNosniff: true
+        customResponseHeaders:
+          X-Served-By: "Traefik-Gateway"
+          X-Content-Type: "application/json"
+
+    forward-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: "http"
+
+    auth-dashboard:
+      basicAuth:
+        users:
+          - "admin:$apr1$yBZc0kJs$9mxzn.l/q30DvsbA32rg5."
+          
+    internal-only:
+      ipWhiteList:
+        sourceRange:
+          - "172.18.0.0/16"
+
+
+    #compress
+    common-compress:
+      compress: {}

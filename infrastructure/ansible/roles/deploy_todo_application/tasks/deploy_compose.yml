@@ -1,0 +1,51 @@
+- name: Create project directory
+  file:
+    path: "{{ project_directory }}"
+    state: directory
+    mode: "0755"
+  become: yes
+
+- name: Copy .env file
+  template:
+    src: "{{ compose_env_file }}" 
+    dest: "{{ project_directory }}/.env"
+  when: compose_env_file | length > 0
+
+- name: Copy docker-compose file
+  template:
+    src: "{{ compose_file }}"
+    dest: "{{ project_directory }}/docker-compose.yml"
+  notify: restart application
+
+- name: Create Traefik config directory
+  file:
+    path: "{{ project_directory }}/config"
+    state: directory
+    mode: "0755"
+  become: yes
+
+- name: Copy Traefik dynamic configuration
+  copy:
+    src: "config/"
+    dest: "{{ project_directory }}/config/"
+    mode: "0644"
+  become: yes
+  notify: restart application
+
+- name: Create docker network
+  docker_network:
+    name: traefik_proxy
+
+- name: Run docker-compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ project_directory }}"
+    project_name: "{{ project_name }}"
+    state: present
+    #pull: never
+    dependencies: yes
+  register: compose_result
+  become: yes
+
+- name: Get states
+  debug:
+    var : compose_result
